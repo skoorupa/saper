@@ -265,7 +265,6 @@ class Board {
 
 	showall() {
 		clearInterval(timerinterval);
-		console.log(this);
 		this.mines.forEach((mine)=>{
 			if (mine.status != "visible")
 				mine.status = "visible";
@@ -318,7 +317,6 @@ setup();
 	el.addEventListener("keyup", setup);
 	el.addEventListener("wheel", (e)=>{
 		e.preventDefault();
-		console.log("scroll");
 		if (e.wheelDelta<0 && e.target.value-1 >= e.target.min) e.target.value--;
 		else if (e.wheelDelta>0) e.target.value++;
 		setup();
