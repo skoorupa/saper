@@ -10,9 +10,6 @@ const mines = document.getElementById("mines");
 const plansza = document.getElementById("plansza");
 let timerinterval;
 let showtable = false;
-function random(x) {
-    return Math.floor(Math.random() * (x + 1));
-}
 class Board {
     constructor(width, height, mines, table) {
         this.width = width;
@@ -149,7 +146,7 @@ class Board {
         if (!this.mines.length) {
             if (this.width * this.height - 10 < this.minequantity) {
                 alert("Ilość min przekracza ilość pól na mapie.");
-                mines.value = this.width * this.height - 10;
+                mines.value = String(this.width * this.height - 10);
                 setup();
                 return;
             }
@@ -288,9 +285,9 @@ class Board {
     }
 }
 function setup() {
-    var w = width.value;
-    var h = height.value;
-    var m = mines.value;
+    var w = Number(width.value);
+    var h = Number(height.value);
+    var m = Number(mines.value);
     // if (w*h < m) return;
     $("#restarticon").fadeOut(100, () => {
         $("#restartform").fadeIn(500);
@@ -316,3 +313,6 @@ setup();
 });
 restarticon.addEventListener("click", setup);
 showallicon.addEventListener("click", () => { saper.showall(); });
+function random(x) {
+    return Math.floor(Math.random() * (x + 1));
+}
