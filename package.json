@@ -4,6 +4,8 @@
   "description": "A simple minesweeper game in web browser.",
   "main": "index.js",
   "scripts": {
+    "deploy": "npm run build && gh-pages -d built",
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -18,6 +20,7 @@
   "homepage": "https://github.com/skoorupa/saper#readme",
   "devDependencies": {
     "@types/jquery": "^3.5.14",
+    "gh-pages": "^4.0.0",
     "typescript": "^4.7.3"
   }
 }
