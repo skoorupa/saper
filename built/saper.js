@@ -10,6 +10,15 @@ const mines = document.getElementById("mines");
 const plansza = document.getElementById("plansza");
 let timerinterval;
 let showtable = false;
+class Field {
+    constructor(x, y, type, status, value) {
+        this.x = x;
+        this.y = y;
+        this.type = type;
+        this.status = status;
+        this.value = value;
+    }
+}
 class Board {
     constructor(width, height, mines, table) {
         this.width = width;
@@ -60,7 +69,8 @@ class Board {
         for (var i = 0; i < this.height; i++) {
             t.push([]);
             for (var j = 0; j < this.width; j++) {
-                t[i].push({ x: j, y: i, type: "blank", status: "hidden", value: 0 });
+                var blank = new Field(j, i, "blank", "hidden", 0);
+                t[i].push(blank);
             }
         }
         this.table = t;
@@ -69,7 +79,7 @@ class Board {
         var t = this.table;
         // generowanie min
         for (var i = 0; i < this.minequantity; i++) {
-            var x, y, mine;
+            var x, y;
             do {
                 x = random(this.width - 1);
                 y = random(this.height - 1);
@@ -80,7 +90,7 @@ class Board {
                 this.getXYAround(click_x, click_y).findIndex((currentXY) => {
                     return currentXY.x == x && currentXY.y == y;
                 }) != -1);
-            mine = { x: x, y: y, type: "mine", status: "hidden" };
+            let mine = new Field(x, y, "mine", "hidden");
             this.mines.push(mine);
             t[y][x] = mine;
         }
@@ -91,7 +101,7 @@ class Board {
                 // console.log(`${i},${j}`);
                 var field = t[i][j];
                 var around = this.getFieldsAround(field);
-                around.forEach(f => {
+                around.forEach((f) => {
                     if (f.type == "mine")
                         count++;
                 });
@@ -258,30 +268,6 @@ class Board {
         });
         this.printTable();
         this.readonly = true;
-    }
-    export() {
-        var seed = "";
-        var l = this.table.length;
-        this.table.forEach(function (row, index) {
-            var blanks = 0;
-            row.forEach(function (field) {
-                if (field.type == "mine") {
-                    if (blanks)
-                        seed += blanks;
-                    seed += ".";
-                    blanks = 0;
-                }
-                else {
-                    blanks++;
-                }
-            });
-            if (blanks && blanks != row.length)
-                seed += blanks;
-            if (index != l - 1)
-                seed += ",";
-        });
-        console.log(seed);
-        console.log(seed.replace(/,/g, "\n"));
     }
 }
 function setup() {

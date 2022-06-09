@@ -7,21 +7,45 @@ const showallicon: HTMLElement = document.getElementById("showallicon");
 const width = document.getElementById("width") as HTMLInputElement;
 const height = document.getElementById("height") as HTMLInputElement;
 const mines = document.getElementById("mines") as HTMLInputElement;
-const plansza: any = document.getElementById("plansza");
+const plansza = document.getElementById("plansza") as HTMLTableElement;
 let timerinterval: number;
 let showtable: boolean = false;
+
+interface FieldCoords {
+	x: number,
+	y: number
+}
+
+type FieldType = "blank" | "mine";
+type FieldStatus = "hidden" | "flagged" | "visible";
+
+interface Field extends FieldCoords {
+	type: FieldType;
+	status: FieldStatus;
+	value?: number;
+}
+
+class Field implements Field {
+	constructor(x, y, type, status, value?) {
+		this.x = x;
+		this.y = y;
+		this.type = type;
+		this.status = status;
+		this.value = value;
+	}
+}
 
 class Board {
 	width: number;
 	height: number;
-	mines: any[];
+	table: Field[];
+	mines: Field[];
 	minequantity: number;
 	minecounter: number;
 	blanks: number;
 	tableObject: HTMLTableElement;
 	lost: boolean;
 	readonly: boolean;
-	table: any;
 	timestart: number;
 
 	constructor(width: number, height: number, mines: number, table: any) {
@@ -41,17 +65,17 @@ class Board {
 	}
 
 	getXYAround(x: number,y: number) {
-		var around = [
+		var around: FieldCoords[] = [
 			{x: x-1, y: y-1},
-			{x: x, y: y-1},
+			{x: x,   y: y-1},
 			{x: x+1, y: y-1},
 			{x: x-1, y: y},
 			{x: x+1, y: y},
 			{x: x-1, y: y+1},
-			{x: x, y: y+1},
+			{x: x,   y: y+1},
 			{x: x+1, y: y+1}
 		];
-		around = around.filter((coords)=>{
+		around = around.filter((coords: FieldCoords)=>{
 			if (
 				coords.x>=0 &&
 				coords.x<this.width &&
@@ -63,8 +87,8 @@ class Board {
 		return around;
 	}
 
-	getFieldsAround(field: { x: any; y: any; }) {
-		var around: any[] = this.getXYAround(field.x, field.y);
+	getFieldsAround(field: FieldCoords) {
+		var around: FieldCoords[] = this.getXYAround(field.x, field.y);
 		around = around.map((coords)=>{
 			return this.table[coords.y][coords.x];
 		});
@@ -78,18 +102,21 @@ class Board {
 		for (var i = 0; i < this.height; i++) {
 			t.push([]);
 			for (var j = 0; j < this.width; j++) {
-				t[i].push({x:j, y:i, type:"blank", status:"hidden", value: 0})
+				var blank = new Field(j, i, "blank", "hidden", 0)
+				t[i].push(blank)
 			}
 		}
 		
 		this.table = t;
 	}
 
-	generateMines(click_x: any,click_y: any) {
+	generateMines(click_x: number, click_y: number) {
 		var t = this.table;
 		// generowanie min
 		for (var i = 0; i < this.minequantity; i++) {
-			var x: number, y: number, mine: { x: any; y: any; type: string; status: string; };
+			var x: number, 
+				y: number;
+
 			do {
 				x = random(this.width-1);
 				y = random(this.height-1);
@@ -102,7 +129,7 @@ class Board {
 					return currentXY.x == x && currentXY.y == y;
 				}) != -1
 			);
-			mine = {x:x, y:y, type:"mine", status:"hidden"};
+			let mine = new Field(x, y, "mine", "hidden");
 			this.mines.push(mine);
 			t[y][x] = mine;
 		}
@@ -113,7 +140,7 @@ class Board {
 				// console.log(`${i},${j}`);
 				var field = t[i][j];
 				var around = this.getFieldsAround(field);
-				around.forEach(f => {
+				around.forEach((f: Field) => {
 					if (f.type=="mine") count++;
 				});
 
@@ -164,7 +191,7 @@ class Board {
 		});
 	}
 
-	click(x: number,y: number) {
+	click(x: number, y: number) {
 		var click = this.table[y][x];
 		if (this.readonly) return;
 
@@ -189,7 +216,7 @@ class Board {
 				var h = Math.floor(t/3600);
 				var m = Math.floor(t/60)%60;
 				var s = t%60;
-				var text;
+				var text: string;
 				if (h>=1) {
 					text = h+":"+(m<10?"0"+m:m)+":"+(s<10?"0"+s:s);
 				} else if (m>=1) {
@@ -205,7 +232,7 @@ class Board {
 		this.printTable();
 	}
 
-	discover(x: string | number,y: string | number) {
+	discover(x: number,y:  number) {
 		var click = this.table[y][x];
 		if (click.status == "visible") return;
 		click.status = "visible";
@@ -264,11 +291,11 @@ class Board {
 		var mines = click.value;
 		var count = 0;
 		if (click.type == "mine") return;
-		around.map((field)=>{
+		around.map((field: Field)=>{
 			if (field.status=="flagged" || (field.status=="visible" && field.type=="mine")) count++;
 		});
 		if (count == mines)
-			around.forEach((field)=>{
+			around.forEach((field: Field)=>{
 				this.click(field.x,field.y);
 			});
 	}
@@ -281,27 +308,6 @@ class Board {
 		});
 		this.printTable();
 		this.readonly = true;
-	}
-
-	export() {
-		var seed = "";
-		var l = this.table.length;
-		this.table.forEach( function(row: any[], index: number) {
-			var blanks = 0;
-			row.forEach( function(field: { type: string; }) {
-				if (field.type=="mine") {
-					if (blanks) seed+=blanks;
-					seed+=".";
-					blanks = 0;
-				} else {
-					blanks++;
-				}
-			});
-			if (blanks&&blanks!=row.length) seed+=blanks;
-			if (index!=l-1) seed+=",";
-		});
-		console.log(seed);
-		console.log(seed.replace(/,/g,"\n"));
 	}
 }
 
