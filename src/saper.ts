@@ -26,7 +26,7 @@ interface Field extends FieldCoords {
 }
 
 class Field implements Field {
-	constructor(x, y, type, status, value?) {
+	constructor(x: number, y: number, type: FieldType, status: FieldStatus, value?: number) {
 		this.x = x;
 		this.y = y;
 		this.type = type;
