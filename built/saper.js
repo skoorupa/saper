@@ -269,6 +269,19 @@ class Board {
         this.printTable();
         this.readonly = true;
     }
+    export() {
+        var line = "";
+        this.table.forEach(row => {
+            row.forEach(field => {
+                if (field.type == "blank")
+                    line += " ";
+                else if (field.type == "mine")
+                    line += "X";
+            });
+            line += "\n";
+        });
+        console.log(line);
+    }
 }
 function setup() {
     var w = Number(width.value);
