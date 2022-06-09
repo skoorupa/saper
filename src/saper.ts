@@ -1,21 +1,30 @@
-var plansza = document.getElementById("plansza");
-var minecounter = document.getElementById("minecounter");
-var timer = document.getElementById("timer");
-var restarticon = document.getElementById("restarticon");
-var restartform = document.getElementById("restartform");
-var showallicon = document.getElementById("showallicon");
-var width = document.getElementById("width");
-var height = document.getElementById("height");
-var mines = document.getElementById("mines");
-var timerinterval;
-var showtable = false;
-
-function random (x) {
-	return Math.floor(Math.random()*(x+1));
-}
+let saper: Board;
+const minecounter: HTMLElement = document.getElementById("minecounter");
+const timer: HTMLElement = document.getElementById("timer");
+const restarticon: HTMLElement = document.getElementById("restarticon");
+const restartform: HTMLElement = document.getElementById("restartform");
+const showallicon: HTMLElement = document.getElementById("showallicon");
+const width = document.getElementById("width") as HTMLInputElement;
+const height = document.getElementById("height") as HTMLInputElement;
+const mines = document.getElementById("mines") as HTMLInputElement;
+const plansza: any = document.getElementById("plansza");
+let timerinterval: number;
+let showtable: boolean = false;
 
 class Board {
-	constructor(width, height, mines, table) {
+	width: number;
+	height: number;
+	mines: any[];
+	minequantity: number;
+	minecounter: number;
+	blanks: number;
+	tableObject: HTMLTableElement;
+	lost: boolean;
+	readonly: boolean;
+	table: any;
+	timestart: number;
+
+	constructor(width: number, height: number, mines: number, table: any) {
 		this.width = width;
 		this.height = height;
 		this.mines = [];
@@ -26,12 +35,12 @@ class Board {
 		this.lost = false;
 		this.readonly = false;
 
-		minecounter.innerHTML = mines;
+		minecounter.innerHTML = String(mines);
 		this.generateTable();
 		this.printTable();
 	}
 
-	getXYAround(x,y) {
+	getXYAround(x: number,y: number) {
 		var around = [
 			{x: x-1, y: y-1},
 			{x: x, y: y-1},
@@ -54,8 +63,8 @@ class Board {
 		return around;
 	}
 
-	getFieldsAround(field) {
-		var around = this.getXYAround(field.x, field.y);
+	getFieldsAround(field: { x: any; y: any; }) {
+		var around: any[] = this.getXYAround(field.x, field.y);
 		around = around.map((coords)=>{
 			return this.table[coords.y][coords.x];
 		});
@@ -76,11 +85,11 @@ class Board {
 		this.table = t;
 	}
 
-	generateMines(click_x,click_y) {
+	generateMines(click_x: any,click_y: any) {
 		var t = this.table;
 		// generowanie min
 		for (var i = 0; i < this.minequantity; i++) {
-			var x, y, mine;
+			var x: number, y: number, mine: { x: any; y: any; type: string; status: string; };
 			do {
 				x = random(this.width-1);
 				y = random(this.height-1);
@@ -103,8 +112,8 @@ class Board {
 				var count = 0;
 				// console.log(`${i},${j}`);
 				var field = t[i][j];
-				var around = this.getFieldsAround(field,t);
-				around.forEach((f) => {
+				var around = this.getFieldsAround(field);
+				around.forEach(f => {
 					if (f.type=="mine") count++;
 				});
 
@@ -155,14 +164,14 @@ class Board {
 		});
 	}
 
-	click(x,y) {
+	click(x: number,y: number) {
 		var click = this.table[y][x];
 		if (this.readonly) return;
 
 		if (!this.mines.length) {
 			if (this.width*this.height-10 < this.minequantity) {
 				alert("Ilość min przekracza ilość pól na mapie.");
-				mines.value = this.width*this.height-10;
+				mines.value = String(this.width*this.height-10);
 				setup();
 				return;
 			}
@@ -174,19 +183,20 @@ class Board {
 
 			var d = new Date();
 			this.timestart = d.getTime();
-			timerinterval = setInterval((board)=>{
+			timerinterval = setInterval((board: { timestart: number; })=>{
 				var d = new Date();
 				var t = Math.floor((d.getTime()-board.timestart)/1000);
 				var h = Math.floor(t/3600);
 				var m = Math.floor(t/60)%60;
 				var s = t%60;
+				var text;
 				if (h>=1) {
-					t = h+":"+(m<10?"0"+m:m)+":"+(s<10?"0"+s:s);
+					text = h+":"+(m<10?"0"+m:m)+":"+(s<10?"0"+s:s);
 				} else if (m>=1) {
-					t = m+":"+(s<10?"0"+s:s);
-				} else t = "0:"+(s<10?"0"+s:s);
+					text = m+":"+(s<10?"0"+s:s);
+				} else text = "0:"+(s<10?"0"+s:s);
 
-				timer.innerHTML = t;
+				timer.innerHTML = text;
 			}, 1000, this);
 		}
 		if(click.status == "flagged" || click.status == "unsure") return;
@@ -195,7 +205,7 @@ class Board {
 		this.printTable();
 	}
 
-	discover(x,y) {
+	discover(x: string | number,y: string | number) {
 		var click = this.table[y][x];
 		if (click.status == "visible") return;
 		click.status = "visible";
@@ -204,7 +214,7 @@ class Board {
 			alert("Przegrałeś :(");
 			this.minecounter--;
 			this.lost = true;
-			minecounter.innerHTML = this.minecounter;
+			minecounter.innerHTML = String(this.minecounter);
 			showallicon.style.display = "inline";
 		}
 		if (click.value==0 && click.type=="blank") {
@@ -220,12 +230,12 @@ class Board {
 			});
 			this.printTable();
 			this.minecounter = 0;
-			minecounter.innerHTML = this.minecounter;
+			minecounter.innerHTML = String(this.minecounter);
 			if (!this.lost) alert("Brawo :)");
 		}
 	}
 
-	flag(x,y) {
+	flag(x: number,y: number) {
 		var click = this.table[y][x];
 		if (!this.mines.length || this.blanks==0) return;
 		switch (click.status) {
@@ -245,10 +255,10 @@ class Board {
 				break;
 		}
 		this.printTable();
-		minecounter.innerHTML = this.minecounter;
+		minecounter.innerHTML = String(this.minecounter);
 	}
 
-	dblclick(x,y) {
+	dblclick(x: number,y: number) {
 		var click = this.table[y][x];
 		var around = this.getFieldsAround(click);
 		var mines = click.value;
@@ -276,9 +286,9 @@ class Board {
 	export() {
 		var seed = "";
 		var l = this.table.length;
-		this.table.forEach( function(row, index) {
+		this.table.forEach( function(row: any[], index: number) {
 			var blanks = 0;
-			row.forEach( function(field) {
+			row.forEach( function(field: { type: string; }) {
 				if (field.type=="mine") {
 					if (blanks) seed+=blanks;
 					seed+=".";
@@ -296,9 +306,9 @@ class Board {
 }
 
 function setup() {
-	var w = width.value;
-	var h = height.value;
-	var m = mines.value;
+	var w = Number(width.value);
+	var h = Number(height.value);
+	var m = Number(mines.value);
 	// if (w*h < m) return;
 
 	$("#restarticon").fadeOut(100,()=>{
@@ -315,7 +325,7 @@ setup();
 
 	el.addEventListener("change", setup);
 	el.addEventListener("keyup", setup);
-	el.addEventListener("wheel", (e)=>{
+	el.addEventListener("wheel", (e: any)=>{
 		e.preventDefault();
 		if (e.wheelDelta<0 && e.target.value-1 >= e.target.min) e.target.value--;
 		else if (e.wheelDelta>0) e.target.value++;
@@ -325,3 +335,7 @@ setup();
 
 restarticon.addEventListener("click", setup);
 showallicon.addEventListener("click", ()=>{saper.showall()});
+
+function random (x: number) {
+	return Math.floor(Math.random()*(x+1));
+}
