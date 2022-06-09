@@ -17,7 +17,7 @@ interface FieldCoords {
 }
 
 type FieldType = "blank" | "mine";
-type FieldStatus = "hidden" | "flagged" | "visible";
+type FieldStatus = "hidden" | "flagged" | "unsure" | "visible";
 
 interface Field extends FieldCoords {
 	type: FieldType;
@@ -38,7 +38,7 @@ class Field implements Field {
 class Board {
 	width: number;
 	height: number;
-	table: Field[];
+	table: Field[][];
 	mines: Field[];
 	minequantity: number;
 	minecounter: number;
@@ -87,13 +87,13 @@ class Board {
 		return around;
 	}
 
-	getFieldsAround(field: FieldCoords) {
-		var around: FieldCoords[] = this.getXYAround(field.x, field.y);
-		around = around.map((coords)=>{
+	getFieldsAround(field: Field) {
+		let aroundCoords = this.getXYAround(field.x, field.y);
+		let aroundFields = aroundCoords.map((coords)=>{
 			return this.table[coords.y][coords.x];
 		});
 
-		return around;
+		return aroundFields;
 	}
 
 	generateTable() {
@@ -140,7 +140,7 @@ class Board {
 				// console.log(`${i},${j}`);
 				var field = t[i][j];
 				var around = this.getFieldsAround(field);
-				around.forEach((f: Field) => {
+				around.forEach(f => {
 					if (f.type=="mine") count++;
 				});
 
@@ -154,7 +154,7 @@ class Board {
 	printTable() {
 		this.tableObject.innerHTML = "";
 		for (var i = 0; i < this.height; i++) {
-			var tr = document.createElement("tr")
+			var tr = document.createElement("tr");
 			for (var j = 0; j < this.width; j++) {
 				var field = this.table[i][j];
 				var td = document.createElement("td");
@@ -291,11 +291,11 @@ class Board {
 		var mines = click.value;
 		var count = 0;
 		if (click.type == "mine") return;
-		around.map((field: Field)=>{
+		around.map((field)=>{
 			if (field.status=="flagged" || (field.status=="visible" && field.type=="mine")) count++;
 		});
 		if (count == mines)
-			around.forEach((field: Field)=>{
+			around.forEach((field)=>{
 				this.click(field.x,field.y);
 			});
 	}

@@ -57,11 +57,11 @@ class Board {
         return around;
     }
     getFieldsAround(field) {
-        var around = this.getXYAround(field.x, field.y);
-        around = around.map((coords) => {
+        let aroundCoords = this.getXYAround(field.x, field.y);
+        let aroundFields = aroundCoords.map((coords) => {
             return this.table[coords.y][coords.x];
         });
-        return around;
+        return aroundFields;
     }
     generateTable() {
         var t = [];
@@ -101,7 +101,7 @@ class Board {
                 // console.log(`${i},${j}`);
                 var field = t[i][j];
                 var around = this.getFieldsAround(field);
-                around.forEach((f) => {
+                around.forEach(f => {
                     if (f.type == "mine")
                         count++;
                 });
