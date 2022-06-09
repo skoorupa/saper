@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Saper</title>
+
+	<link rel="stylesheet" type="text/css" href="./style.css">
+	<script type="text/javascript" src="./jquery-3.6.0.min.js"></script>
+</head>
+<body>
+	<div id="topbar">
+		<div id="restart">
+			<span id="restarticon" style="display: none;" title="Zacznij od nowa">🔄</span>
+			<span id="showallicon" style="display: none;" title="Poddaj się i odkryj miny">💥</span>
+			<span id="restartform">
+				↔ <input type="number" min="4" value="30" id="width">
+				↕ <input type="number" min="4" value="16" id="height">
+				💣 <input type="number" min="1" value="99" id="mines">
+			</span>
+		</div>
+		<div id="info">
+			⏱ <span id="timer">0:00</span>
+			💣 <span id="minecounter">99</span>
+		</div>
+	</div>
+	
+	<div>
+		<table id="plansza" oncontextmenu="return false"></table>
+	</div>
+
+	<script type="text/javascript" src="./saper.js"></script>
+</body>
+</html>
