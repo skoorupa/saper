@@ -1,15 +1,15 @@
 let saper: Board;
-const minecounter: HTMLElement = document.getElementById("minecounter");
-const timer: HTMLElement = document.getElementById("timer");
-const restarticon: HTMLElement = document.getElementById("restarticon");
-const restartform: HTMLElement = document.getElementById("restartform");
-const showallicon: HTMLElement = document.getElementById("showallicon");
+const minecounter = document.getElementById("minecounter");
+const timer = document.getElementById("timer");
+const restarticon = document.getElementById("restarticon");
+const restartform = document.getElementById("restartform");
+const showallicon = document.getElementById("showallicon");
 const width = document.getElementById("width") as HTMLInputElement;
 const height = document.getElementById("height") as HTMLInputElement;
 const mines = document.getElementById("mines") as HTMLInputElement;
 const plansza = document.getElementById("plansza") as HTMLTableElement;
 let timerinterval: number;
-let showtable: boolean = false;
+let showtable = false;
 
 interface FieldCoords {
 	x: number,
@@ -48,7 +48,7 @@ class Board {
 	readonly: boolean;
 	timestart: number;
 
-	constructor(width: number, height: number, mines: number, table: any) {
+	constructor(width: number, height: number, mines: number, table: HTMLTableElement) {
 		this.width = width;
 		this.height = height;
 		this.mines = [];
@@ -64,7 +64,7 @@ class Board {
 		this.printTable();
 	}
 
-	getXYAround(x: number,y: number) {
+	getXYAround({ x, y }: FieldCoords) {
 		var around: FieldCoords[] = [
 			{x: x-1, y: y-1},
 			{x: x,   y: y-1},
@@ -88,7 +88,7 @@ class Board {
 	}
 
 	getFieldsAround(field: Field) {
-		let aroundCoords = this.getXYAround(field.x, field.y);
+		let aroundCoords = this.getXYAround({ x: field.x, y: field.y });
 		let aroundFields = aroundCoords.map((coords)=>{
 			return this.table[coords.y][coords.x];
 		});
@@ -110,28 +110,28 @@ class Board {
 		this.table = t;
 	}
 
-	generateMines(click_x: number, click_y: number) {
+	generateMines({ x, y }: FieldCoords) {
 		var t = this.table;
 		// generowanie min
 		for (var i = 0; i < this.minequantity; i++) {
-			var x: number, 
-				y: number;
+			var randomX: number, 
+				randomY: number;
 
 			do {
-				x = random(this.width-1);
-				y = random(this.height-1);
+				randomX = random(this.width-1);
+				randomY = random(this.height-1);
 			} while (
 				this.mines.findIndex((currentmine) => {
-					return currentmine.x == x && currentmine.y == y;
+					return currentmine.x == randomX && currentmine.y == randomY;
 				}) != -1 || 
-				(x == click_x && y == click_y) ||
-				this.getXYAround(click_x,click_y).findIndex((currentXY) => {
-					return currentXY.x == x && currentXY.y == y;
+				(randomX == x && randomY == y) ||
+				this.getXYAround({ x: x, y: y }).findIndex((currentXY) => {
+					return currentXY.x == randomX && currentXY.y == randomY;
 				}) != -1
 			);
-			let mine = new Field(x, y, "mine", "hidden");
+			let mine = new Field(randomX, randomY, "mine", "hidden");
 			this.mines.push(mine);
-			t[y][x] = mine;
+			t[randomY][randomX] = mine;
 		}
 		// generowanie pól z numerkami
 		for (var i = 0; i < this.height; i++) {
@@ -174,24 +174,24 @@ class Board {
 		[...this.tableObject.getElementsByTagName("tr")].forEach((row,i)=>{
 			[...row.getElementsByTagName("td")].forEach((cell,j)=>{
 				cell.addEventListener("click", (e)=>{
-					this.click(j,i);
+					this.click({ x: j, y: i });
 				});
 				cell.addEventListener("contextmenu", ()=>{
-					this.flag(j,i);
+					this.flag({ x: j, y: i });
 					return false;
 				});
 				cell.addEventListener("dblclick", ()=>{
-					this.dblclick(j,i);
+					this.dblclick({ x: j, y: i });
 				});
 				cell.addEventListener("mouseup", (e)=>{
 					if (e.which !== 2) return;
-					this.dblclick(j,i);
+					this.dblclick({ x: j, y: i });
 				});
 			});
 		});
 	}
 
-	click(x: number, y: number) {
+	click({ x, y }: FieldCoords) {
 		var click = this.table[y][x];
 		if (this.readonly) return;
 
@@ -203,7 +203,7 @@ class Board {
 				return;
 			}
 
-			this.generateMines(x,y);
+			this.generateMines({ x: x, y: y });
 			$("#restartform").fadeOut(2000,()=>{
 				$("#restarticon").fadeIn(2000);
 			});
@@ -228,11 +228,11 @@ class Board {
 		}
 		if(click.status == "flagged" || click.status == "unsure") return;
 
-		this.discover(x,y);
+		this.discover({ x, y });
 		this.printTable();
 	}
 
-	discover(x: number,y:  number) {
+	discover({ x, y }: FieldCoords) {
 		var click = this.table[y][x];
 		if (click.status == "visible") return;
 		click.status = "visible";
@@ -246,7 +246,7 @@ class Board {
 		}
 		if (click.value==0 && click.type=="blank") {
 			this.getFieldsAround(click).forEach((field)=>{
-				/*if (this.table[field.y][field.x].status == "hidden")*/ this.discover(field.x,field.y);
+				/*if (this.table[field.y][field.x].status == "hidden")*/ this.discover({ x: field.x, y: field.y });
 			});
 		}
 		if (this.blanks==0/*&&!this.lost*/) { // wygranko
@@ -262,7 +262,7 @@ class Board {
 		}
 	}
 
-	flag(x: number,y: number) {
+	flag({ x, y }: FieldCoords) {
 		var click = this.table[y][x];
 		if (!this.mines.length || this.blanks==0) return;
 		switch (click.status) {
@@ -278,14 +278,14 @@ class Board {
 				click.status = "hidden";
 				break;
 			case "visible":
-				this.dblclick(x,y);
+				this.dblclick({ x, y });
 				break;
 		}
 		this.printTable();
 		minecounter.innerHTML = String(this.minecounter);
 	}
 
-	dblclick(x: number,y: number) {
+	dblclick({ x, y }: FieldCoords) {
 		var click = this.table[y][x];
 		var around = this.getFieldsAround(click);
 		var mines = click.value;
@@ -296,7 +296,7 @@ class Board {
 		});
 		if (count == mines)
 			around.forEach((field)=>{
-				this.click(field.x,field.y);
+				this.click({ x: field.x, y: field.y });
 			});
 	}
 
@@ -353,8 +353,8 @@ setup();
 });
 
 restarticon.addEventListener("click", setup);
-showallicon.addEventListener("click", ()=>{saper.showall()});
+showallicon.addEventListener("click", saper.showall);
 
-function random (x: number) {
+function random (x: number): number {
 	return Math.floor(Math.random()*(x+1));
 }

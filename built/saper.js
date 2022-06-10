@@ -34,7 +34,7 @@ class Board {
         this.generateTable();
         this.printTable();
     }
-    getXYAround(x, y) {
+    getXYAround({ x, y }) {
         var around = [
             { x: x - 1, y: y - 1 },
             { x: x, y: y - 1 },
@@ -57,7 +57,7 @@ class Board {
         return around;
     }
     getFieldsAround(field) {
-        let aroundCoords = this.getXYAround(field.x, field.y);
+        let aroundCoords = this.getXYAround({ x: field.x, y: field.y });
         let aroundFields = aroundCoords.map((coords) => {
             return this.table[coords.y][coords.x];
         });
@@ -75,24 +75,24 @@ class Board {
         }
         this.table = t;
     }
-    generateMines(click_x, click_y) {
+    generateMines({ x, y }) {
         var t = this.table;
         // generowanie min
         for (var i = 0; i < this.minequantity; i++) {
-            var x, y;
+            var randomX, randomY;
             do {
-                x = random(this.width - 1);
-                y = random(this.height - 1);
+                randomX = random(this.width - 1);
+                randomY = random(this.height - 1);
             } while (this.mines.findIndex((currentmine) => {
-                return currentmine.x == x && currentmine.y == y;
+                return currentmine.x == randomX && currentmine.y == randomY;
             }) != -1 ||
-                (x == click_x && y == click_y) ||
-                this.getXYAround(click_x, click_y).findIndex((currentXY) => {
-                    return currentXY.x == x && currentXY.y == y;
+                (randomX == x && randomY == y) ||
+                this.getXYAround({ x: x, y: y }).findIndex((currentXY) => {
+                    return currentXY.x == randomX && currentXY.y == randomY;
                 }) != -1);
-            let mine = new Field(x, y, "mine", "hidden");
+            let mine = new Field(randomX, randomY, "mine", "hidden");
             this.mines.push(mine);
-            t[y][x] = mine;
+            t[randomY][randomX] = mine;
         }
         // generowanie pól z numerkami
         for (var i = 0; i < this.height; i++) {
@@ -132,24 +132,24 @@ class Board {
         [...this.tableObject.getElementsByTagName("tr")].forEach((row, i) => {
             [...row.getElementsByTagName("td")].forEach((cell, j) => {
                 cell.addEventListener("click", (e) => {
-                    this.click(j, i);
+                    this.click({ x: j, y: i });
                 });
                 cell.addEventListener("contextmenu", () => {
-                    this.flag(j, i);
+                    this.flag({ x: j, y: i });
                     return false;
                 });
                 cell.addEventListener("dblclick", () => {
-                    this.dblclick(j, i);
+                    this.dblclick({ x: j, y: i });
                 });
                 cell.addEventListener("mouseup", (e) => {
                     if (e.which !== 2)
                         return;
-                    this.dblclick(j, i);
+                    this.dblclick({ x: j, y: i });
                 });
             });
         });
     }
-    click(x, y) {
+    click({ x, y }) {
         var click = this.table[y][x];
         if (this.readonly)
             return;
@@ -160,7 +160,7 @@ class Board {
                 setup();
                 return;
             }
-            this.generateMines(x, y);
+            this.generateMines({ x: x, y: y });
             $("#restartform").fadeOut(2000, () => {
                 $("#restarticon").fadeIn(2000);
             });
@@ -186,10 +186,10 @@ class Board {
         }
         if (click.status == "flagged" || click.status == "unsure")
             return;
-        this.discover(x, y);
+        this.discover({ x, y });
         this.printTable();
     }
-    discover(x, y) {
+    discover({ x, y }) {
         var click = this.table[y][x];
         if (click.status == "visible")
             return;
@@ -205,7 +205,7 @@ class Board {
         }
         if (click.value == 0 && click.type == "blank") {
             this.getFieldsAround(click).forEach((field) => {
-                /*if (this.table[field.y][field.x].status == "hidden")*/ this.discover(field.x, field.y);
+                /*if (this.table[field.y][field.x].status == "hidden")*/ this.discover({ x: field.x, y: field.y });
             });
         }
         if (this.blanks == 0 /*&&!this.lost*/) { // wygranko
@@ -221,7 +221,7 @@ class Board {
                 alert("Brawo :)");
         }
     }
-    flag(x, y) {
+    flag({ x, y }) {
         var click = this.table[y][x];
         if (!this.mines.length || this.blanks == 0)
             return;
@@ -238,13 +238,13 @@ class Board {
                 click.status = "hidden";
                 break;
             case "visible":
-                this.dblclick(x, y);
+                this.dblclick({ x, y });
                 break;
         }
         this.printTable();
         minecounter.innerHTML = String(this.minecounter);
     }
-    dblclick(x, y) {
+    dblclick({ x, y }) {
         var click = this.table[y][x];
         var around = this.getFieldsAround(click);
         var mines = click.value;
@@ -257,7 +257,7 @@ class Board {
         });
         if (count == mines)
             around.forEach((field) => {
-                this.click(field.x, field.y);
+                this.click({ x: field.x, y: field.y });
             });
     }
     showall() {
@@ -311,7 +311,7 @@ setup();
     });
 });
 restarticon.addEventListener("click", setup);
-showallicon.addEventListener("click", () => { saper.showall(); });
+showallicon.addEventListener("click", saper.showall);
 function random(x) {
     return Math.floor(Math.random() * (x + 1));
 }
