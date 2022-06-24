@@ -353,7 +353,7 @@ setup();
 });
 
 restarticon.addEventListener("click", setup);
-showallicon.addEventListener("click", saper.showall);
+showallicon.addEventListener("click", ()=>{saper.showall()});
 
 function random (x: number): number {
 	return Math.floor(Math.random()*(x+1));
