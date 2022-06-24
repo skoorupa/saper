@@ -1,8 +1,9 @@
 let saper;
 const minecounter = document.getElementById("minecounter");
 const timer = document.getElementById("timer");
-const restarticon = document.getElementById("restarticon");
+const ingameicons = document.getElementById("ingameicons");
 const restartform = document.getElementById("restartform");
+const restarticon = document.getElementById("restarticon");
 const showallicon = document.getElementById("showallicon");
 const width = document.getElementById("width");
 const height = document.getElementById("height");
@@ -161,9 +162,12 @@ class Board {
                 return;
             }
             this.generateMines({ x: x, y: y });
-            $("#restartform").fadeOut(2000, () => {
-                $("#restarticon").fadeIn(2000);
-            });
+            restartform.classList.add('hide');
+            restartform.classList.remove('show');
+            setTimeout(() => {
+                ingameicons.classList.add('show');
+                ingameicons.classList.remove('hide');
+            }, 400);
             var d = new Date();
             this.timestart = d.getTime();
             timerinterval = setInterval((board) => {
@@ -201,7 +205,8 @@ class Board {
             this.minecounter--;
             this.lost = true;
             minecounter.innerHTML = String(this.minecounter);
-            showallicon.style.display = "inline";
+            showallicon.classList.add('show');
+            showallicon.classList.remove('hide');
         }
         if (click.value == 0 && click.type == "blank") {
             this.getFieldsAround(click).forEach((field) => {
@@ -288,10 +293,14 @@ function setup() {
     var h = Number(height.value);
     var m = Number(mines.value);
     // if (w*h < m) return;
-    $("#restarticon").fadeOut(100, () => {
-        $("#restartform").fadeIn(500);
-    });
-    showallicon.style.display = "none";
+    ingameicons.classList.add('hide');
+    ingameicons.classList.remove('show');
+    setTimeout(() => {
+        restartform.classList.add('show');
+        restartform.classList.remove('hide');
+    }, 400);
+    showallicon.classList.add('hide');
+    showallicon.classList.remove('show');
     if (timerinterval)
         clearInterval(timerinterval);
     timer.innerHTML = "0:00";

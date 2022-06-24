@@ -84,3 +84,16 @@ td.blank5::before {content:"5";color:#7f0300;}
 td.blank6::before {content:"6";color:#018181;}
 td.blank7::before {content:"7";color:#000000;}
 td.blank8::before {content:"8";color:#808080;}
+
+.show, .hide {
+	position: absolute;
+	transition: opacity 400ms, visibility 400ms;
+}
+.show {
+	opacity: 1;
+	visibility: visible;
+}
+.hide {
+	opacity: 0;
+	visibility: hidden;
+}
