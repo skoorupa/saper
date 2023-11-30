@@ -4,7 +4,7 @@
   "description": "A simple minesweeper game in web browser.",
   "main": "index.js",
   "scripts": {
-    "deploy": "npm run build && gh-pages -d built",
+    "deploy": "tsc && gh-pages -d built",
     "build": "tsc --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
