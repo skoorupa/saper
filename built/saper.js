@@ -7,7 +7,7 @@ const restarticon = document.getElementById("restarticon");
 const showallicon = document.getElementById("showallicon");
 const width = document.getElementById("width");
 const height = document.getElementById("height");
-const mines = document.getElementById("mines");
+const minesinput = document.getElementById("mines");
 const plansza = document.getElementById("plansza");
 let timerinterval;
 let showtable = false;
@@ -157,7 +157,7 @@ class Board {
         if (!this.mines.length) {
             if (this.width * this.height - 10 < this.minequantity) {
                 alert("Ilość min przekracza ilość pól na mapie.");
-                mines.value = String(this.width * this.height - 10);
+                minesinput.value = String(this.width * this.height - 10);
                 setup();
                 return;
             }
@@ -291,7 +291,7 @@ class Board {
 function setup() {
     var w = Number(width.value);
     var h = Number(height.value);
-    var m = Number(mines.value);
+    var m = Number(minesinput.value);
     // if (w*h < m) return;
     ingameicons.classList.add('hide');
     ingameicons.classList.remove('show');
@@ -307,7 +307,7 @@ function setup() {
     saper = new Board(w, h, m, plansza);
 }
 setup();
-[width, height, mines].forEach(function (el) {
+[width, height, minesinput].forEach(function (el) {
     el.addEventListener("change", setup);
     el.addEventListener("keyup", setup);
     el.addEventListener("wheel", (e) => {
