@@ -1,12 +1,13 @@
 let saper;
 const minecounter = document.getElementById("minecounter");
 const timer = document.getElementById("timer");
-const restarticon = document.getElementById("restarticon");
+const ingameicons = document.getElementById("ingameicons");
 const restartform = document.getElementById("restartform");
+const restarticon = document.getElementById("restarticon");
 const showallicon = document.getElementById("showallicon");
 const width = document.getElementById("width");
 const height = document.getElementById("height");
-const mines = document.getElementById("mines");
+const minesinput = document.getElementById("mines");
 const plansza = document.getElementById("plansza");
 let timerinterval;
 let showtable = false;
@@ -156,14 +157,17 @@ class Board {
         if (!this.mines.length) {
             if (this.width * this.height - 10 < this.minequantity) {
                 alert("Ilość min przekracza ilość pól na mapie.");
-                mines.value = String(this.width * this.height - 10);
+                minesinput.value = String(this.width * this.height - 10);
                 setup();
                 return;
             }
             this.generateMines({ x: x, y: y });
-            $("#restartform").fadeOut(2000, () => {
-                $("#restarticon").fadeIn(2000);
-            });
+            restartform.classList.add('hide');
+            restartform.classList.remove('show');
+            setTimeout(() => {
+                ingameicons.classList.add('show');
+                ingameicons.classList.remove('hide');
+            }, 400);
             var d = new Date();
             this.timestart = d.getTime();
             timerinterval = setInterval((board) => {
@@ -201,7 +205,8 @@ class Board {
             this.minecounter--;
             this.lost = true;
             minecounter.innerHTML = String(this.minecounter);
-            showallicon.style.display = "inline";
+            showallicon.classList.add('show');
+            showallicon.classList.remove('hide');
         }
         if (click.value == 0 && click.type == "blank") {
             this.getFieldsAround(click).forEach((field) => {
@@ -286,19 +291,23 @@ class Board {
 function setup() {
     var w = Number(width.value);
     var h = Number(height.value);
-    var m = Number(mines.value);
+    var m = Number(minesinput.value);
     // if (w*h < m) return;
-    $("#restarticon").fadeOut(100, () => {
-        $("#restartform").fadeIn(500);
-    });
-    showallicon.style.display = "none";
+    ingameicons.classList.add('hide');
+    ingameicons.classList.remove('show');
+    setTimeout(() => {
+        restartform.classList.add('show');
+        restartform.classList.remove('hide');
+    }, 400);
+    showallicon.classList.add('hide');
+    showallicon.classList.remove('show');
     if (timerinterval)
         clearInterval(timerinterval);
     timer.innerHTML = "0:00";
     saper = new Board(w, h, m, plansza);
 }
 setup();
-[width, height, mines].forEach(function (el) {
+[width, height, minesinput].forEach(function (el) {
     el.addEventListener("change", setup);
     el.addEventListener("keyup", setup);
     el.addEventListener("wheel", (e) => {
@@ -311,7 +320,7 @@ setup();
     });
 });
 restarticon.addEventListener("click", setup);
-showallicon.addEventListener("click", saper.showall);
+showallicon.addEventListener("click", () => { saper.showall(); });
 function random(x) {
     return Math.floor(Math.random() * (x + 1));
 }
